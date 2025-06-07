@@ -11,10 +11,10 @@ class GreetingResourceTest {
     @Test
     void testHelloEndpoint() {
         given()
-          .when().get("/v1/hello")
-          .then()
-             .statusCode(200)
-             .body(is("Hello from Quarkus REST"));
+                .when().get("/v1/hello")
+                .then()
+                .statusCode(200)
+                .body(is("Hello from Quarkus REST"));
     }
 
 }
