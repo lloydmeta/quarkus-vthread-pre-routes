@@ -1,6 +1,5 @@
 package com.beachape;
 
-import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Handler;
@@ -66,12 +65,8 @@ public class VirtualThreadAuthIT {
 
     @Test
     public void testSayMyNameWithBasicAuthUsesVirtualThreads() {
-        // Create basic auth header
-        String credentials = "testuser:testpass";
-        String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes());
-
         given()
-                .header("Authorization", "Basic " + encodedCredentials)
+                .auth().basic("testuser", "testpass")
                 .when().get("/v1/hello/say-my-name")
                 .then()
                 .statusCode(200);
