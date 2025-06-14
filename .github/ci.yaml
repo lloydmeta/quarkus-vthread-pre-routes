@@ -20,15 +20,11 @@ jobs:
         java-version: '24'
         distribution: 'temurin'
         
-    - name: Cache Maven dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.m2
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-m2
-        
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+      
     - name: Run tests
-      run: ./mvnw clean verify
+      run: ./gradlew clean test integrationTest
       
     - name: Upload test results
       uses: actions/upload-artifact@v4
@@ -36,13 +32,13 @@ jobs:
       with:
         name: test-results
         path: |
-          target/surefire-reports/
-          target/failsafe-reports/
+          build/reports/tests/
+          build/test-results/
           
     - name: Publish test report
       uses: dorny/test-reporter@v1
       if: success() || failure()
       with:
-        name: Maven Tests
-        path: 'target/surefire-reports/*.xml,target/failsafe-reports/*.xml'
+        name: Gradle Tests
+        path: 'build/test-results/**/TEST-*.xml'
         reporter: java-junit
