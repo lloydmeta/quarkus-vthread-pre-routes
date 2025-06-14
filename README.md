@@ -1,4 +1,5 @@
 # quarkus-vthread-pre-routes
+[![CI](https://github.com/lloydmeta/quarkus-vthread-pre-routes/actions/workflows/ci.yaml/badge.svg)](https://github.com/lloydmeta/quarkus-vthread-pre-routes/actions/workflows/ci.yaml)
 
 This is a small project that demonstrates what I described in https://github.com/quarkusio/quarkus/discussions/48263
 
