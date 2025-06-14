@@ -2,6 +2,8 @@ package com.beachape.auth;
 
 import org.jboss.logging.Logger;
 
+import static com.beachape.logging.MessageUtils.formatMessageWithThread;
+
 import io.quarkus.security.identity.IdentityProviderManager;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.quarkus.vertx.http.runtime.security.ChallengeData;
@@ -19,7 +21,7 @@ public class MyAuthMechanism implements HttpAuthenticationMechanism {
 
     @Override
     public Uni<SecurityIdentity> authenticate(RoutingContext context, IdentityProviderManager identityProviderManager) {
-        LOGGER.info("Handling authentication in MyAuthMechanism");
+        LOGGER.info(formatMessageWithThread("Handling authentication in MyAuthMechanism"));
         String authorizationHeader = context.request().getHeader(HttpHeaders.AUTHORIZATION);
         if (authorizationHeader == null || !authorizationHeader.startsWith("Basic ")) {
             return Uni.createFrom().nullItem();

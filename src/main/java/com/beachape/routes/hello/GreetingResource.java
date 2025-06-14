@@ -4,6 +4,8 @@ import java.security.Principal;
 
 import org.jboss.logging.Logger;
 
+import static com.beachape.logging.MessageUtils.formatMessageWithThread;
+
 import io.quarkus.security.Authenticated;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.smallrye.common.annotation.RunOnVirtualThread;
@@ -25,7 +27,7 @@ public class GreetingResource {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String hello() {
-        LOGGER.info("Handling hello within GreetingResource");
+        LOGGER.info(formatMessageWithThread("Handling hello within GreetingResource"));
         return "Hello from Quarkus REST";
     }
 
@@ -34,13 +36,13 @@ public class GreetingResource {
     @Path("/say-my-name")
     @Produces(MediaType.TEXT_PLAIN)
     public String sayMyName(@Context SecurityIdentity securityIdentity) {
-        LOGGER.info("Handling say-my-name within GreetingResource");
+        LOGGER.info(formatMessageWithThread("Handling say-my-name within GreetingResource"));
         Principal principal = securityIdentity.getPrincipal();
         if (principal != null) {
-            LOGGER.info("Authenticated user: " + principal.getName());
+            LOGGER.info(formatMessageWithThread("Authenticated user: " + principal.getName()));
             return "Hello, " + principal.getName() + "!";
         } else {
-            LOGGER.warn("No authenticated user found in SecurityIdentity");
+            LOGGER.warn(formatMessageWithThread("No authenticated user found in SecurityIdentity"));
             return "Hello, anonymous user!";
         }
     }

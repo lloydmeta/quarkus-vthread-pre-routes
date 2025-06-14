@@ -4,6 +4,8 @@ import java.time.Duration;
 
 import org.jboss.logging.Logger;
 
+import static com.beachape.logging.MessageUtils.formatMessageWithThread;
+
 import io.quarkus.security.identity.AuthenticationRequestContext;
 import io.quarkus.security.identity.IdentityProvider;
 import io.quarkus.security.identity.SecurityIdentity;
@@ -23,14 +25,16 @@ public class MyAuthIdentityProvider implements IdentityProvider<MyAuthRequest> {
 
     @Override
     public Uni<SecurityIdentity> authenticate(MyAuthRequest request, AuthenticationRequestContext context) {
-        LOGGER.info("Handling authentication in MyAuthIdentityProvider for user: " + request.getUsername());
-        LOGGER.info("Simulating IO by sleeping for 5 seconds");
+        LOGGER.info(formatMessageWithThread(
+                "Handling authentication in MyAuthIdentityProvider for user: " + request.getUsername()));
+        LOGGER.info(formatMessageWithThread("Simulating IO by sleeping for 5 seconds"));
         try {
             Thread.sleep(Duration.ofSeconds(5).toMillis()); // Simulate IO operation
         } catch (InterruptedException e) {
             LOGGER.error("Thread interrupted during sleep", e);
         }
-        LOGGER.info("Done sleeping, creating SecurityIdentity for user: " + request.getUsername());
+        LOGGER.info(
+                formatMessageWithThread("Done sleeping, creating SecurityIdentity for user: " + request.getUsername()));
         SecurityIdentity identity = QuarkusSecurityIdentity.builder()
                 .setPrincipal(() -> request.getUsername())
                 .build();

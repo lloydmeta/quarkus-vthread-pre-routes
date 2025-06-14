@@ -6,6 +6,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterAll;
@@ -21,21 +22,19 @@ import static io.restassured.RestAssured.given;
 @QuarkusTest
 public class VirtualThreadAuthIT {
 
-    private static final List<LogRecordWithThread> capturedLogs = new CopyOnWriteArrayList<>();
+    private static final List<LogRecord> capturedLogs = new CopyOnWriteArrayList<>();
     private static Handler testHandler;
 
-    // Custom class to store log record with the actual thread name
-    record LogRecordWithThread(LogRecord record, String threadName) {
-    }
+    // Pattern to extract thread name from formatted messages like
+    // "[Thread:VirtualThread[#123]] message"
+    private static final Pattern THREAD_PATTERN = Pattern.compile("\\[Thread:([^\\]]+)\\]");
 
     @BeforeAll
     static void setUp() {
         testHandler = new Handler() {
             @Override
             public void publish(LogRecord record) {
-                // Capture the actual thread name at the moment of logging
-                String currentThreadName = Thread.currentThread().getName();
-                capturedLogs.add(new LogRecordWithThread(record, currentThreadName));
+                capturedLogs.add(record);
             }
 
             @Override
@@ -83,22 +82,37 @@ public class VirtualThreadAuthIT {
 
     private void verifyVirtualThreadsInComponent(String loggerName, String componentName) {
         List<String> componentThreadNames = capturedLogs.stream()
-                .filter(entry -> entry.record().getLoggerName().equals(loggerName))
-                .map(LogRecordWithThread::threadName)
+                .filter(record -> record.getLoggerName().equals(loggerName))
+                .map(this::extractThreadNameFromMessage)
+                .filter(threadName -> threadName != null)
                 .collect(Collectors.toList());
 
         assertFalse(componentThreadNames.isEmpty(),
-                "No logs found for component: " + componentName);
+                "No logs with thread names found for component: " + componentName);
 
         // Virtual threads typically have names containing "Virtual" or matching
         // patterns like "VirtualThread[#123]"
         boolean allVirtualThreads = componentThreadNames.stream()
-                .allMatch(name -> name.toLowerCase().contains("virtual"));
+                .allMatch(name -> name.startsWith("quarkus-virtual-thread-"));
 
         assertTrue(allVirtualThreads,
                 String.format("Expected all threads in %s to be virtual threads, but found: %s",
                         componentName, componentThreadNames));
 
         System.out.println(componentName + " thread names: " + componentThreadNames);
+    }
+
+    private String extractThreadNameFromMessage(LogRecord record) {
+        String message = record.getMessage();
+        if (message == null) {
+            return null;
+        }
+
+        var matcher = THREAD_PATTERN.matcher(message);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+
+        return null;
     }
 }
