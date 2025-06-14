@@ -4,6 +4,8 @@ import java.util.UUID;
 
 import org.jboss.logging.Logger;
 
+import static com.beachape.logging.MessageUtils.formatMessageWithThread;
+
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.ext.Provider;
@@ -17,7 +19,7 @@ public final class ReqIdRequestFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) {
-        LOGGER.info("Processing request in ReqIdRequestFilter");
+        LOGGER.info(formatMessageWithThread("Processing request in ReqIdRequestFilter"));
         var reqId = UUID.randomUUID().toString();
         requestContext.setProperty(PROPERTY_NAME, reqId);
     }

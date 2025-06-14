@@ -5,6 +5,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -15,6 +16,11 @@ import static io.restassured.RestAssured.given;
 
 @QuarkusTest
 class GreetingResourceTest {
+
+    // Pattern to extract thread name from formatted messages like
+    // "[Thread:VirtualThread[#123]] message"
+    private static final Pattern THREAD_PATTERN = Pattern.compile("\\[Thread:([^\\]]+)\\]");
+
     @Test
     void testHelloEndpoint() {
         given()
@@ -29,14 +35,19 @@ class GreetingResourceTest {
         var capturedLogs = new CopyOnWriteArrayList<String>();
         var capturedThreadNames = new CopyOnWriteArrayList<String>();
 
-        // Create a custom handler that captures thread names
+        // Create a custom handler that captures thread names from log messages
         var customHandler = new Handler() {
             @Override
             public void publish(LogRecord record) {
                 if (record.getMessage() != null
                         && record.getMessage().contains("Handling hello within GreetingResource")) {
                     capturedLogs.add(record.getMessage());
-                    capturedThreadNames.add(record.getLongThreadID() + ":" + Thread.currentThread().getName());
+
+                    // Extract thread name from the formatted message
+                    String threadName = extractThreadNameFromMessage(record.getMessage());
+                    if (threadName != null) {
+                        capturedThreadNames.add(threadName);
+                    }
                 }
             }
 
@@ -71,7 +82,7 @@ class GreetingResourceTest {
 
             // Check if any thread names indicate virtual threads
             boolean hasVirtualThread = capturedThreadNames.stream()
-                    .anyMatch(threadInfo -> threadInfo.toLowerCase().contains("virtual"));
+                    .anyMatch(threadName -> threadName.startsWith("quarkus-virtual-thread-"));
 
             assertTrue(hasVirtualThread,
                     "Expected at least one log entry from a virtual thread. Captured threads: " + capturedThreadNames);
@@ -81,5 +92,18 @@ class GreetingResourceTest {
         } finally {
             julLogger.removeHandler(customHandler);
         }
+    }
+
+    private String extractThreadNameFromMessage(String message) {
+        if (message == null) {
+            return null;
+        }
+
+        var matcher = THREAD_PATTERN.matcher(message);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+
+        return null;
     }
 }
