@@ -1,6 +1,6 @@
 plugins {
     java
-    id("io.quarkus")
+    id("io.quarkus") version "3.23.3" // Inlined for Dependabot version management
 }
 
 repositories {
@@ -8,12 +8,8 @@ repositories {
     mavenLocal()
 }
 
-val quarkusPlatformGroupId: String by project
-val quarkusPlatformArtifactId: String by project
-val quarkusPlatformVersion: String by project
-
 dependencies {
-    implementation(enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}"))
+    implementation(enforcedPlatform("io.quarkus.platform:quarkus-bom:3.23.3")) // Inlined for Dependabot version management
     implementation("io.quarkus:quarkus-rest")
     implementation("io.quarkus:quarkus-arc")
     implementation("io.quarkus:quarkus-security")   
