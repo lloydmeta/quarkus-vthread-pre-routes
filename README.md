@@ -5,7 +5,7 @@ This is a small project that demonstrates what I described in https://github.com
 
 ## How to use
 
-Assuming you've cloned this repo and have Java 24 installed
+Assuming you've cloned this repo and have Java 25 installed
 
 1. Start Quarkus (`./gradlew quarkusDev`)
 2. In another terminal, run `./curl_loop.sh`
