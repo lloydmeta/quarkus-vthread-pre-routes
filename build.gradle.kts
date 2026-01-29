@@ -1,6 +1,6 @@
 plugins {
     java
-    id("io.quarkus") version "3.30.6" // Inlined for Dependabot version management
+    id("io.quarkus") version "3.31.1" // Inlined for Dependabot version management
 }
 
 repositories {
@@ -9,11 +9,11 @@ repositories {
 }
 
 dependencies {
-    implementation(enforcedPlatform("io.quarkus.platform:quarkus-bom:3.30.8")) // Inlined for Dependabot version management
+    implementation(enforcedPlatform("io.quarkus.platform:quarkus-bom:3.31.1")) // Inlined for Dependabot version management
     implementation("io.quarkus:quarkus-rest")
     implementation("io.quarkus:quarkus-arc")
-    implementation("io.quarkus:quarkus-security")   
-    
+    implementation("io.quarkus:quarkus-security")
+
     testImplementation("io.quarkus:quarkus-junit5")
     testImplementation("io.rest-assured:rest-assured")
 }
