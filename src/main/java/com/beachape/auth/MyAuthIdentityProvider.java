@@ -2,6 +2,7 @@ package com.beachape.auth;
 
 import java.time.Duration;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import static com.beachape.logging.MessageUtils.formatMessageWithThread;
@@ -18,6 +19,9 @@ public class MyAuthIdentityProvider implements IdentityProvider<MyAuthRequest> {
 
     private static final Logger LOGGER = Logger.getLogger(MyAuthIdentityProvider.class);
 
+    @ConfigProperty(name = "myauth.identity-provider.use-context-run-blocking", defaultValue = "true")
+    boolean useContextRunBlocking;
+
     @Override
     public Class<MyAuthRequest> getRequestType() {
         return MyAuthRequest.class;
@@ -25,6 +29,14 @@ public class MyAuthIdentityProvider implements IdentityProvider<MyAuthRequest> {
 
     @Override
     public Uni<SecurityIdentity> authenticate(MyAuthRequest request, AuthenticationRequestContext context) {
+        if (useContextRunBlocking) {
+            return context.runBlocking(() -> doAuthenticate(request));
+        } else {
+            return Uni.createFrom().item(doAuthenticate(request));
+        }
+    }
+
+    private SecurityIdentity doAuthenticate(MyAuthRequest request) {
         LOGGER.info(formatMessageWithThread(
                 "Handling authentication in MyAuthIdentityProvider for user: " + request.getUsername()));
         LOGGER.info(formatMessageWithThread("Simulating IO by sleeping for 5 seconds"));
@@ -34,11 +46,11 @@ public class MyAuthIdentityProvider implements IdentityProvider<MyAuthRequest> {
             LOGGER.error("Thread interrupted during sleep", e);
         }
         LOGGER.info(
-                formatMessageWithThread("Done sleeping, creating SecurityIdentity for user: " + request.getUsername()));
-        SecurityIdentity identity = QuarkusSecurityIdentity.builder()
+                formatMessageWithThread(
+                        "Done sleeping, creating SecurityIdentity for user: " + request.getUsername()));
+        return QuarkusSecurityIdentity.builder()
                 .setPrincipal(() -> request.getUsername())
                 .build();
-        return Uni.createFrom().item(identity);
     }
 
 }
