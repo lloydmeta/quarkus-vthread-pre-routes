@@ -1,6 +1,6 @@
 plugins {
     java
-    id("io.quarkus") version "3.35.3" // Inlined for Dependabot version management
+    id("io.quarkus") version "3.36.0" // Inlined for Dependabot version management
 }
 
 repositories {
